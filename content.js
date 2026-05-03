@@ -447,17 +447,37 @@
   }
 
   // ── Tooltip content transitions ───────────────────────────
-  let tooltipFadeTimer = null;
-  let tooltipSizeTimer  = null;
-  let lastTooltipEl     = null;   // which DOM element is currently displayed
+  let tooltipFadeTimer  = null;
+  let tooltipCleanTimer = null;
+  let lastTooltipKey    = null;   // fingerprint of currently displayed content
 
   const _T_SIZE = 180;  // ms — width/height animation
   const _T_FADE = 140;  // ms — content fade-in
   const _T_EASE = 'cubic-bezier(0.4, 0, 0.2, 1)';
 
+  // Measure HTML in an off-screen ghost — never touches the visible tooltip
+  function measureContent(html) {
+    const g = document.createElement('div');
+    g.style.cssText = [
+      'position:fixed','top:-9999px','left:-9999px',
+      'visibility:hidden','pointer-events:none','display:block',
+      'color:white',
+      'font-family:Helvetica Neue,HelveticaNeue,-apple-system,BlinkMacSystemFont,sans-serif',
+      'font:14px/1.4 Helvetica Neue,HelveticaNeue,-apple-system,BlinkMacSystemFont,sans-serif',
+      'font-weight:500','min-width:280px','max-width:360px','padding:12px 16px',
+      'border:1px solid transparent','border-radius:10px','box-sizing:content-box',
+    ].join(';');
+    g.innerHTML = `<div>${html}</div>`;
+    document.documentElement.appendChild(g);
+    const w = g.offsetWidth;
+    const h = g.offsetHeight;
+    g.remove();
+    return { w, h };
+  }
+
   function setTooltipContent(html, instant) {
     clearTimeout(tooltipFadeTimer);
-    clearTimeout(tooltipSizeTimer);
+    clearTimeout(tooltipCleanTimer);
     const wrap = tooltip.querySelector('#__fi_wrap');
 
     if (instant || !wrap) {
@@ -469,46 +489,39 @@
       return;
     }
 
-    // 1. Freeze at current visual position (safe even mid-animation)
+    // 1. Freeze at current visual position — getBoundingClientRect is correct
+    //    even when a CSS transition is running (returns rendered position)
     const rect = tooltip.getBoundingClientRect();
     tooltip.style.transition = '';
     tooltip.style.width  = rect.width  + 'px';
     tooltip.style.height = rect.height + 'px';
-    tooltip.offsetHeight; // commit frozen position before any paint
+    tooltip.offsetHeight; // commit to layout before next step
 
-    // 2. Hide old content instantly (no fade-out delay = no flicker)
+    // 2. Pre-measure new content size via ghost (zero impact on visible tooltip)
+    const { w: toW, h: toH } = measureContent(html);
+
+    // 3. Hide old content instantly and swap HTML
     wrap.style.transition = '';
     wrap.style.opacity = '0';
     tooltip.style.overflow = 'hidden';
-
-    // 3. Swap content while invisible, measure new natural size synchronously
-    //    (browser won't paint between these three lines)
     wrap.innerHTML = html;
-    tooltip.style.width  = '';
-    tooltip.style.height = '';
-    const toW = tooltip.offsetWidth;
-    const toH = tooltip.offsetHeight;
-    tooltip.style.width  = rect.width  + 'px';
-    tooltip.style.height = rect.height + 'px';
 
-    // 4. Animate size → then fade in new content
+    // 4. Animate size, then fade in new content
     requestAnimationFrame(() => requestAnimationFrame(() => {
       tooltip.style.transition = `width ${_T_SIZE}ms ${_T_EASE}, height ${_T_SIZE}ms ${_T_EASE}`;
       tooltip.style.width  = toW + 'px';
       tooltip.style.height = toH + 'px';
 
-      // Fade in starts 20ms after size animation so they overlap pleasantly
       tooltipFadeTimer = setTimeout(() => {
         wrap.style.transition = `opacity ${_T_FADE}ms ease-out`;
         wrap.style.opacity = '1';
       }, 20);
     }));
 
-    // 5. Clean up explicit sizes after animation completes
-    tooltipSizeTimer = setTimeout(() => {
-      tooltip.style.width    = '';
-      tooltip.style.height   = '';
-      tooltip.style.overflow = '';
+    // Remove overflow + transition after animation — keep explicit w/h as anchor
+    // for next animation (avoids snap to auto size)
+    tooltipCleanTimer = setTimeout(() => {
+      tooltip.style.overflow   = '';
       tooltip.style.transition = '';
     }, _T_SIZE + 40);
   }
@@ -694,16 +707,15 @@
     if (!el || el === tooltip || el === logPanel || logPanel?.contains(el)) return;
     lastTarget = el;
 
-    let html;
+    let html, contentKey;
     if (hasText(el)) {
       setHighlight(el);
       const s = getComputedStyle(el);
       const family = resolveActualFont(s.fontFamily);
       currentFamily = family;
-      const colorHex = rgb2hex(s.color);
-      const bgColor = s.backgroundColor;
-      const bgHex = bgColor && bgColor !== 'rgba(0, 0, 0, 0)' ? rgb2hex(bgColor) : null;
       const cyrState = cyrillicCache.has(family) ? cyrillicCache.get(family) : null;
+      // Fingerprint: all fields that change tooltip content
+      contentKey = `${family}|${s.fontSize}|${s.fontWeight}|${s.color}|${cyrState}`;
 
       html = buildTooltipForEl(el);
       if (cyrState === null) {
@@ -712,12 +724,11 @@
       } else {
         clearInterval(spinnerInterval);
       }
-      // Live-update cyrillic tag when result arrives (handled in prefetch)
     } else {
       clearHighlight();
       currentFamily = null;
       clearInterval(spinnerInterval);
-      const fonts = getPageFonts();
+      contentKey = '__nontext__';
       html = `<div style="font-size:12px;font-weight:600;color:#888;margin-bottom:8px">Наведите на текст</div>`;
       html += `<div style="border-top:1px solid #1e1e1e;margin-bottom:8px"></div>`;
       html += `<div style="font-size:10px;color:#555;margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em">Шрифты на странице</div>`;
@@ -728,10 +739,8 @@
 
     const wasHidden = tooltip.style.display !== 'block';
     tooltip.style.display = 'block';
-    // contentKey: DOM element for text nodes, null for non-text (page-fonts list never changes)
-    const contentKey = hasText(el) ? el : null;
-    if (wasHidden || contentKey !== lastTooltipEl) {
-      lastTooltipEl = contentKey;
+    if (wasHidden || contentKey !== lastTooltipKey) {
+      lastTooltipKey = contentKey;
       setTooltipContent(html, wasHidden);
     }
 
@@ -790,7 +799,7 @@
       document.documentElement.style.removeProperty('cursor');
       clearHighlight();
       clearInterval(spinnerInterval);
-      currentFamily = null; lastTooltipEl = null;
+      currentFamily = null; lastTooltipKey = null;
       if (tooltip) tooltip.style.display = 'none';
       // Notify background that inspector is now off
       chrome.runtime.sendMessage({ action: 'inspectorOff' });
@@ -798,7 +807,7 @@
   }
   function onMouseLeave(e) {
     if (e.target === logPanel || logPanel?.contains(e.target)) return;
-    if (!locked) { tooltip.style.display = 'none'; clearHighlight(); clearInterval(spinnerInterval); lastTooltipEl = null; }
+    if (!locked) { tooltip.style.display = 'none'; clearHighlight(); clearInterval(spinnerInterval); lastTooltipKey = null; }
   }
 
   // ── Animation settings panel ──────────────────────────────

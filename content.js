@@ -447,13 +447,20 @@
   }
 
   // ── Tooltip content transitions ───────────────────────────
-  let tooltipFadeTimer  = null;
-  let tooltipCleanTimer = null;
-  let lastTooltipKey    = null;   // fingerprint of currently displayed content
+  const _T_SIZE    = 180;  // ms — width/height animation
+  const _T_FADE    = 140;  // ms — content fade-in
+  const _T_EASE    = 'cubic-bezier(0.4, 0, 0.2, 1)';
+  const DELAY_OUT  = 200;  // ms — wait before hiding old content
+  const DELAY_IN   = 200;  // ms — wait after hiding before showing new content
 
-  const _T_SIZE = 180;  // ms — width/height animation
-  const _T_FADE = 140;  // ms — content fade-in
-  const _T_EASE = 'cubic-bezier(0.4, 0, 0.2, 1)';
+  let outTimer     = null;  // fires DELAY_OUT ms after new content queued → fade out
+  let inTimer      = null;  // fires DELAY_IN ms after fade-out → commitContent
+  let fadeInTimer  = null;  // tiny delay inside commitContent before opacity → 1
+  let cleanTimer   = null;  // cleanup overflow/transition after size animation
+  let pendingHtml  = null;  // latest html waiting to be committed
+  let pendingSize  = null;  // { w, h } measured for pendingHtml
+  let contentEmpty = false; // true while wrap opacity === 0 (between out and in)
+  let lastTooltipKey = null;
 
   // Measure HTML in an off-screen ghost — never touches the visible tooltip
   function measureContent(html) {
@@ -464,8 +471,8 @@
       'color:white',
       'font-family:Helvetica Neue,HelveticaNeue,-apple-system,BlinkMacSystemFont,sans-serif',
       'font:14px/1.4 Helvetica Neue,HelveticaNeue,-apple-system,BlinkMacSystemFont,sans-serif',
-      'font-weight:500','min-width:280px','max-width:360px','padding:12px 16px',
-      'border:1px solid transparent','border-radius:10px','box-sizing:content-box',
+      'font-weight:500','min-width:314px','max-width:394px','padding:12px 16px',
+      'border:1px solid transparent','border-radius:10px','box-sizing:border-box',
     ].join(';');
     g.innerHTML = `<div>${html}</div>`;
     document.documentElement.appendChild(g);
@@ -475,55 +482,88 @@
     return { w, h };
   }
 
-  function setTooltipContent(html, instant) {
-    clearTimeout(tooltipFadeTimer);
-    clearTimeout(tooltipCleanTimer);
+  function clearTransitionTimers() {
+    clearTimeout(outTimer);
+    clearTimeout(inTimer);
+    clearTimeout(fadeInTimer);
+    outTimer = inTimer = fadeInTimer = null;
+    // cleanTimer is NOT cancelled here — it must always run to remove overflow:hidden
+  }
+
+  // Commit pendingHtml/pendingSize into the visible tooltip with size+fade animation
+  function commitContent() {
     const wrap = tooltip.querySelector('#__fi_wrap');
+    if (!wrap || !pendingHtml) return;
+    clearTimeout(cleanTimer); cleanTimer = null;
 
-    if (instant || !wrap) {
-      tooltip.style.width    = '';
-      tooltip.style.height   = '';
-      tooltip.style.overflow = '';
-      tooltip.style.transition = '';
-      tooltip.innerHTML = `<div id="__fi_wrap">${html}</div>`;
-      return;
-    }
+    const html = pendingHtml;
+    const { w: toW, h: toH } = pendingSize;
+    pendingHtml = null; pendingSize = null;
 
-    // 1. Freeze at current visual position — getBoundingClientRect is correct
-    //    even when a CSS transition is running (returns rendered position)
+    // Freeze size + clip BEFORE injecting HTML — prevents one-frame size jump
     const rect = tooltip.getBoundingClientRect();
     tooltip.style.transition = '';
-    tooltip.style.width  = rect.width  + 'px';
-    tooltip.style.height = rect.height + 'px';
-    tooltip.offsetHeight; // commit to layout before next step
-
-    // 2. Pre-measure new content size via ghost (zero impact on visible tooltip)
-    const { w: toW, h: toH } = measureContent(html);
-
-    // 3. Hide old content instantly and swap HTML
-    wrap.style.transition = '';
-    wrap.style.opacity = '0';
+    tooltip.style.width    = rect.width  + 'px';
+    tooltip.style.height   = rect.height + 'px';
     tooltip.style.overflow = 'hidden';
+    wrap.style.transition  = '';
+    wrap.style.opacity     = '0';
+    tooltip.offsetHeight;   // commit all of the above to layout
+
     wrap.innerHTML = html;
 
-    // 4. Animate size, then fade in new content
     requestAnimationFrame(() => requestAnimationFrame(() => {
       tooltip.style.transition = `width ${_T_SIZE}ms ${_T_EASE}, height ${_T_SIZE}ms ${_T_EASE}`;
       tooltip.style.width  = toW + 'px';
       tooltip.style.height = toH + 'px';
 
-      tooltipFadeTimer = setTimeout(() => {
+      fadeInTimer = setTimeout(() => {
         wrap.style.transition = `opacity ${_T_FADE}ms ease-out`;
         wrap.style.opacity = '1';
+        contentEmpty = false;
       }, 20);
     }));
 
-    // Remove overflow + transition after animation — keep explicit w/h as anchor
-    // for next animation (avoids snap to auto size)
-    tooltipCleanTimer = setTimeout(() => {
+    cleanTimer = setTimeout(() => {
       tooltip.style.overflow   = '';
       tooltip.style.transition = '';
     }, _T_SIZE + 40);
+  }
+
+  function setTooltipContent(html, instant) {
+    clearTransitionTimers();
+    const wrap = tooltip.querySelector('#__fi_wrap');
+
+    if (instant || !wrap) {
+      contentEmpty = false;
+      pendingHtml = null; pendingSize = null;
+      tooltip.style.width    = '';
+      tooltip.style.height   = '';
+      tooltip.style.overflow = '';
+      tooltip.style.transition = '';
+      tooltip.innerHTML = `<div id="__fi_wrap" style="opacity:1">${html}</div>`;
+      return;
+    }
+
+    // Always update pending — it's what will be shown when the delay fires
+    pendingHtml = html;
+    pendingSize = measureContent(html);
+
+    if (contentEmpty) {
+      // Content already hidden — skip the out-delay, just wait DELAY_IN to show new
+      inTimer = setTimeout(commitContent, DELAY_IN);
+    } else {
+      // Content visible — wait DELAY_OUT, then hide, then wait DELAY_IN to show new
+      outTimer = setTimeout(() => {
+        const w2 = tooltip.querySelector('#__fi_wrap');
+        if (w2) {
+          w2.style.transition = `opacity ${_T_FADE}ms ease-in`;
+          w2.style.opacity = '0';
+        }
+        contentEmpty = true;
+        inTimer = setTimeout(commitContent, DELAY_IN);
+      }, DELAY_OUT);
+    }
   }
 
   function startSpinner() {
@@ -601,7 +641,7 @@
       'background:rgba(22,22,22,0.88)','color:white','font-family:Helvetica Neue,HelveticaNeue,-apple-system,BlinkMacSystemFont,sans-serif',
       'border:1px solid #2c2c2c','border-radius:10px','padding:12px 16px',
       'font:14px/1.4 Helvetica Neue,HelveticaNeue,-apple-system,BlinkMacSystemFont,sans-serif','font-weight:500',
-      'min-width:280px','max-width:360px','box-shadow:0 8px 28px rgba(0,0,0,.6)','display:none','transform-style:preserve-3d','will-change:transform','left:0','top:0',
+      'min-width:314px','max-width:394px','box-sizing:border-box','box-shadow:0 8px 28px rgba(0,0,0,.6)','display:none','transform-style:preserve-3d','will-change:transform','left:0','top:0',
     ].join(';');
     document.documentElement.appendChild(el);
     return el;
@@ -690,7 +730,7 @@
       ${wName ? `<span style="font-size:20px;font-weight:500;color:rgba(255,255,255,0.6);white-space:nowrap;flex-shrink:0">${wName}</span>` : ''}
     </div>`;
     // Metrics row
-    h += `<div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin-bottom:16px">
+    h += `<div style="display:flex;gap:16px;align-items:center;flex-wrap:nowrap;margin-bottom:16px">
       ${m(_ICON_SIZE, s.fontSize)}
       ${m(_ICON_LH, displayLH)}
       ${m(_ICON_LS, displayLS)}
@@ -799,6 +839,8 @@
       document.documentElement.style.removeProperty('cursor');
       clearHighlight();
       clearInterval(spinnerInterval);
+      clearTransitionTimers();
+      contentEmpty = false; pendingHtml = null; pendingSize = null;
       currentFamily = null; lastTooltipKey = null;
       if (tooltip) tooltip.style.display = 'none';
       // Notify background that inspector is now off
@@ -807,7 +849,7 @@
   }
   function onMouseLeave(e) {
     if (e.target === logPanel || logPanel?.contains(e.target)) return;
-    if (!locked) { tooltip.style.display = 'none'; clearHighlight(); clearInterval(spinnerInterval); lastTooltipKey = null; }
+    if (!locked) { tooltip.style.display = 'none'; clearHighlight(); clearInterval(spinnerInterval); clearTransitionTimers(); contentEmpty = false; pendingHtml = null; pendingSize = null; lastTooltipKey = null; }
   }
 
   // ── Animation settings panel ──────────────────────────────
@@ -892,9 +934,11 @@
     document.documentElement.style.removeProperty('cursor');
     clearHighlight();
     clearInterval(spinnerInterval);
+    clearTransitionTimers();
+    contentEmpty = false; pendingHtml = null; pendingSize = null;
     if (animRafId) { cancelAnimationFrame(animRafId); animRafId = null; }
     animTilt.x = 0; animTilt.z = 0;
-    pageFontsCache = null; currentFamily = null;
+    pageFontsCache = null; currentFamily = null; lastTooltipKey = null;
     if (tooltip) { tooltip.style.display = 'none'; tooltip.style.transform = ''; }
     // Log panel stays visible even when inspector is off
   }

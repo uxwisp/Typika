@@ -381,7 +381,7 @@
           log(font, `unexpected error: ${e.message}`);
         }
         // Re-render tooltip if it's currently showing this font
-        if (currentFamily === font && lastTarget && tooltip && tooltip.style.display === 'block') {
+        if (currentFamily === font && lastTarget && tooltip && tooltip.style.display === 'flex') {
           onMouseMove.__lastEvent && onMouseMove.__lastEvent instanceof MouseEvent
             ? null : null;
           // Rebuild tooltip HTML in place
@@ -458,28 +458,28 @@
   let fadeInTimer  = null;  // tiny delay inside commitContent before opacity → 1
   let cleanTimer   = null;  // cleanup overflow/transition after size animation
   let pendingHtml  = null;  // latest html waiting to be committed
-  let pendingSize  = null;  // { w, h } measured for pendingHtml
+  let pendingSize  = null;  // height in px measured for pendingHtml
   let contentEmpty = false; // true while wrap opacity === 0 (between out and in)
   let lastTooltipKey = null;
 
-  // Measure HTML in an off-screen ghost — never touches the visible tooltip
+  // Measure HTML height in an off-screen ghost — matches tooltip geometry exactly
   function measureContent(html) {
     const g = document.createElement('div');
     g.style.cssText = [
       'position:fixed','top:-9999px','left:-9999px',
-      'visibility:hidden','pointer-events:none','display:block',
+      'visibility:hidden','pointer-events:none',
+      'display:flex','flex-direction:column','gap:8px',
+      'width:310px','padding:20px 8px 8px',
+      'border:1px solid transparent','border-radius:20px',
+      'box-sizing:border-box','overflow:hidden',
       'color:white',
-      'font-family:Helvetica Neue,HelveticaNeue,-apple-system,BlinkMacSystemFont,sans-serif',
-      'font:14px/1.4 Helvetica Neue,HelveticaNeue,-apple-system,BlinkMacSystemFont,sans-serif',
-      'font-weight:500','min-width:314px','max-width:394px','padding:12px 16px',
-      'border:1px solid transparent','border-radius:10px','box-sizing:border-box',
+      'font:500 14px/1.4 Helvetica Neue,HelveticaNeue,-apple-system,BlinkMacSystemFont,sans-serif',
     ].join(';');
-    g.innerHTML = `<div>${html}</div>`;
+    g.innerHTML = html;
     document.documentElement.appendChild(g);
-    const w = g.offsetWidth;
     const h = g.offsetHeight;
     g.remove();
-    return { w, h };
+    return h;
   }
 
   function clearTransitionTimers() {
@@ -497,24 +497,22 @@
     clearTimeout(cleanTimer); cleanTimer = null;
 
     const html = pendingHtml;
-    const { w: toW, h: toH } = pendingSize;
+    const toH  = pendingSize;
     pendingHtml = null; pendingSize = null;
 
-    // Freeze size + clip BEFORE injecting HTML — prevents one-frame size jump
+    // Freeze height + clip BEFORE injecting HTML — width is always fixed 310px
     const rect = tooltip.getBoundingClientRect();
     tooltip.style.transition = '';
-    tooltip.style.width    = rect.width  + 'px';
     tooltip.style.height   = rect.height + 'px';
     tooltip.style.overflow = 'hidden';
     wrap.style.transition  = '';
     wrap.style.opacity     = '0';
-    tooltip.offsetHeight;   // commit all of the above to layout
+    tooltip.offsetHeight;
 
     wrap.innerHTML = html;
 
     requestAnimationFrame(() => requestAnimationFrame(() => {
-      tooltip.style.transition = `width ${_T_SIZE}ms ${_T_EASE}, height ${_T_SIZE}ms ${_T_EASE}`;
-      tooltip.style.width  = toW + 'px';
+      tooltip.style.transition = `height ${_T_SIZE}ms ${_T_EASE}`;
       tooltip.style.height = toH + 'px';
 
       fadeInTimer = setTimeout(() => {
@@ -537,7 +535,6 @@
     if (instant || !wrap) {
       contentEmpty = false;
       pendingHtml = null; pendingSize = null;
-      tooltip.style.width    = '';
       tooltip.style.height   = '';
       tooltip.style.overflow = '';
       tooltip.style.transition = '';
@@ -638,10 +635,16 @@
     el.id = '__fi_tip';
     el.style.cssText = [
       'position:fixed','z-index:2147483647','pointer-events:none',
-      'background:rgba(22,22,22,0.88)','color:white','font-family:Helvetica Neue,HelveticaNeue,-apple-system,BlinkMacSystemFont,sans-serif',
-      'border:1px solid #2c2c2c','border-radius:10px','padding:12px 16px',
-      'font:14px/1.4 Helvetica Neue,HelveticaNeue,-apple-system,BlinkMacSystemFont,sans-serif','font-weight:500',
-      'min-width:314px','max-width:394px','box-sizing:border-box','box-shadow:0 8px 28px rgba(0,0,0,.6)','display:none','transform-style:preserve-3d','will-change:transform','left:0','top:0',
+      'width:310px','box-sizing:border-box',
+      'background:rgba(22,22,22,0.81)',
+      'backdrop-filter:blur(3px)','-webkit-backdrop-filter:blur(3px)',
+      'border:1px solid rgba(255,255,255,0.1)','border-radius:20px',
+      'padding:20px 8px 8px',
+      'display:none','flex-direction:column','gap:8px','overflow:hidden',
+      'color:white',
+      'font:500 14px/1.4 Helvetica Neue,HelveticaNeue,-apple-system,BlinkMacSystemFont,sans-serif',
+      'box-shadow:0 8px 32px rgba(0,0,0,.5)',
+      'transform-style:preserve-3d','will-change:transform','left:0','top:0',
     ].join(';');
     document.documentElement.appendChild(el);
     return el;
@@ -682,9 +685,21 @@
     return `<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="8" cy="8" r="6.5" fill="${hex}" stroke="rgba(255,255,255,0.25)" stroke-width="1"/></svg>`;
   }
 
+  function getSemanticTag(el) {
+    let node = el;
+    while (node && node !== document.body) {
+      const tag = node.tagName?.toLowerCase();
+      if (/^h[1-6]$/.test(tag)) return tag.toUpperCase();
+      node = node.parentElement;
+    }
+    return '';
+  }
+
+  const _ICON_ARROW_DARK = `<svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5.5 2.5H2.5C1.948 2.5 1.5 2.948 1.5 3.5V11.5C1.5 12.052 1.948 12.5 2.5 12.5H10.5C11.052 12.5 11.5 12.052 11.5 11.5V8.5M8.5 1.5H12.5V5.5M12.5 1.5L6 8" stroke="rgba(0,0,0,0.6)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  const _ICON_ARROW_LIGHT = `<svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5.5 2.5H2.5C1.948 2.5 1.5 2.948 1.5 3.5V11.5C1.5 12.052 1.948 12.5 2.5 12.5H10.5C11.052 12.5 11.5 12.052 11.5 11.5V8.5M8.5 1.5H12.5V5.5M12.5 1.5L6 8" stroke="rgba(255,255,255,0.7)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+
   function buildTooltipForEl(el) {
     const s = getComputedStyle(el);
-    const rawFamily = s.fontFamily.split(',')[0].replace(/['"]/g,'').trim();
     const family = resolveActualFont(s.fontFamily);
     currentFamily = family;
     const colorHex = rgb2hex(s.color);
@@ -694,51 +709,60 @@
     const displayFamily = resolveFamilyName(fullName || family);
     const displayLH = resolveLineHeight(el, s.lineHeight, s.fontSize);
     const displayLS = (s.letterSpacing === 'normal' || parseFloat(s.letterSpacing) === 0) ? '0px' : s.letterSpacing;
-    const hint = gfInfo ? `Нажмите чтобы перейти в Google Fonts` : `Нажмите чтобы найти шрифт`;
-
-    // GF badge — white pill with logo
-    const gfTag = gfInfo
-      ? `<div style="background:white;border-radius:40px;padding:4px 10px 4px 8px;display:inline-flex;align-items:center;height:25px;flex-shrink:0">${_ICON_GF}</div>`
-      : '';
-
-    // Cyrillic badge:
-    // null → spinner, true → green, false → hidden
-    let cyrTag = '';
-    if (cyrState === null) {
-      cyrTag = `<div style="background:rgba(255,255,255,0.12);border-radius:40px;padding:4px 10px;display:inline-flex;align-items:center;gap:4px;height:25px;flex-shrink:0"><span class="__fi_spin" style="color:rgba(255,255,255,0.5);font-size:13px;font-weight:500">⠋</span><span style="font-size:14px;font-weight:500;color:rgba(255,255,255,0.5)">Кириллица</span></div>`;
-    } else if (cyrState === true) {
-      cyrTag = `<div style="background:rgba(84,255,140,0.22);border-radius:40px;padding:4px 10px;display:inline-flex;align-items:center;gap:4px;height:25px;flex-shrink:0"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2.5 7L5.5 10L11.5 4" stroke="#a8ffcc" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg><span style="font-size:14px;font-weight:500;color:#a8ffcc">Кириллица</span></div>`;
-    }
-    // cyrState === false → cyrTag stays '' (not shown)
-
-    // Weight name
     const wNum = parseInt(s.fontWeight);
     const wName = {100:'Thin',200:'ExtraLight',300:'Light',400:'Regular',500:'Medium',600:'SemiBold',700:'Bold',800:'ExtraBold',900:'Black'}[wNum] || '';
-    const ls = parseFloat(s.letterSpacing) !== 0 ? s.letterSpacing : null;
+    const semTag = getSemanticTag(el);
 
-    // Metric item helper
-    const m = (icon, val) => `<div style="display:inline-flex;gap:6px;align-items:center;white-space:nowrap">${icon}<span style="color:white;font-size:14px;font-weight:500">${val}</span></div>`;
+    // bg-light blob — color depends on state
+    const blobGradient = gfInfo && cyrState === true
+      ? 'radial-gradient(ellipse 230px 180px at 80% 120%, rgba(50,110,230,0.6) 0%, transparent 70%), radial-gradient(ellipse 200px 160px at 10% 120%, rgba(20,180,140,0.5) 0%, transparent 70%)'
+      : gfInfo
+        ? 'radial-gradient(ellipse 280px 200px at 50% 130%, rgba(50,110,230,0.65) 0%, transparent 70%)'
+        : cyrState !== false
+          ? 'radial-gradient(ellipse 280px 200px at 50% 130%, rgba(20,180,140,0.6) 0%, transparent 70%)'
+          : 'radial-gradient(ellipse 280px 200px at 50% 130%, rgba(200,140,30,0.55) 0%, transparent 70%)';
 
-    let h = '';
-    // Tags row (only if at least one tag exists)
-    if (gfTag || cyrTag) {
-      h += `<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:16px">${gfTag}${cyrTag}</div>`;
+    const CHIP = 'background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;box-sizing:border-box;overflow:hidden;min-width:1px';
+    const chipVal = (v) => `<span style="font-size:12px;font-weight:500;color:white;white-space:nowrap">${v}</span>`;
+    const chipRight = (html) => `<div style="flex-shrink:0;display:flex;align-items:center">${html}</div>`;
+
+    // Cyrillic chip (null → spinner, true → check, false → hidden)
+    let cyrChip = '';
+    if (cyrState === null) {
+      cyrChip = `<div style="${CHIP};flex:none;width:100%">${chipVal('<span class="__fi_spin">⠋</span> Кириллица')}${chipRight(`<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="5.5" stroke="rgba(255,255,255,0.25)" stroke-width="1.5"/></svg>`)}</div>`;
+    } else if (cyrState === true) {
+      cyrChip = `<div style="${CHIP};flex:none;width:100%">${chipVal('Кириллица')}${chipRight(`<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3.5 8L6.5 11L12.5 5" stroke="#4ade80" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`)}</div>`;
     }
-    // Font name + weight
-    h += `<div style="display:flex;gap:6px;align-items:baseline;margin-bottom:16px;overflow:hidden">
-      <span style="font-size:20px;font-weight:500;color:white;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${displayFamily}</span>
-      ${wName ? `<span style="font-size:20px;font-weight:500;color:rgba(255,255,255,0.6);white-space:nowrap;flex-shrink:0">${wName}</span>` : ''}
-    </div>`;
-    // Metrics row
-    h += `<div style="display:flex;gap:16px;align-items:center;flex-wrap:nowrap;margin-bottom:16px">
-      ${m(_ICON_SIZE, s.fontSize)}
-      ${m(_ICON_LH, displayLH)}
-      ${m(_ICON_LS, displayLS)}
-      ${m(_iconColor(colorHex), colorHex)}
-    </div>`;
-    // Footer hint — Regular (400), rgba(255,255,255,0.6), 14px
-    h += `<div style="font-size:14px;font-weight:400;color:rgba(255,255,255,0.6)">${hint}</div>`;
-    return h;
+
+    // CTA button
+    const btnStyle = 'flex-shrink:0;width:100%;height:36px;border-radius:8px 8px 16px 16px;display:flex;align-items:center;justify-content:center;gap:6px;box-sizing:border-box;overflow:hidden';
+    let btn = '';
+    if (gfInfo) {
+      btn = `<div style="${btnStyle};background:white;padding:8px 16px 8px 14px">${_ICON_GF}${_ICON_ARROW_DARK}</div>`;
+    } else {
+      btn = `<div style="${btnStyle};background:rgba(255,255,255,0.1);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);padding:8px 16px"><span style="font-size:14px;font-weight:400;color:rgba(255,255,255,0.8);white-space:nowrap">Нажмите, чтобы найти шрифт</span>${_ICON_ARROW_LIGHT}</div>`;
+    }
+
+    return `
+<div style="position:absolute;bottom:0;left:0;right:0;height:228px;pointer-events:none;background:${blobGradient}"></div>
+<div style="display:flex;flex-direction:column;gap:12px;position:relative;width:100%">
+  <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:baseline;padding:0 16px">
+    <span style="font-size:20px;font-weight:500;color:white">${displayFamily}</span>
+    ${wName ? `<span style="font-size:20px;font-weight:500;color:rgba(255,255,255,0.6)">${wName}</span>` : ''}
+  </div>
+  <div style="display:flex;flex-direction:column;gap:8px;width:100%">
+    <div style="display:flex;gap:8px;align-items:stretch">
+      <div style="${CHIP};flex:1">${chipVal(s.fontSize)}${chipRight(semTag ? `<span style="font-size:12px;font-weight:500;color:rgba(255,255,255,0.5)">${semTag}</span>` : '')}</div>
+      <div style="${CHIP};flex:1">${chipVal(displayLH)}${chipRight(_ICON_LH)}</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:stretch">
+      <div style="${CHIP};flex:1">${chipVal(displayLS)}${chipRight(_ICON_LS)}</div>
+      <div style="${CHIP};flex:1">${chipVal(colorHex)}${chipRight(`<div style="width:12px;height:12px;border-radius:50%;background:${colorHex};border:1px solid rgba(255,255,255,0.25);flex-shrink:0"></div>`)}</div>
+    </div>
+    ${cyrChip}
+  </div>
+</div>
+${btn}`;
   }
 
   function onMouseMove(e) {
@@ -769,22 +793,25 @@
       currentFamily = null;
       clearInterval(spinnerInterval);
       contentKey = '__nontext__';
-      html = `<div style="font-size:12px;font-weight:600;color:#888;margin-bottom:8px">Наведите на текст</div>`;
-      html += `<div style="border-top:1px solid #1e1e1e;margin-bottom:8px"></div>`;
-      html += `<div style="font-size:10px;color:#555;margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em">Шрифты на странице</div>`;
-      html += getPageFonts().map(f =>
-        `<div style="padding:2.5px 0;font-size:12px;color:#aaa;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${f}</div>`
-      ).join('');
+      const pageFonts = getPageFonts();
+      html = `
+<div style="position:absolute;bottom:0;left:0;right:0;height:228px;pointer-events:none;background:radial-gradient(ellipse 260px 180px at 50% 130%, rgba(80,80,80,0.45) 0%, transparent 70%)"></div>
+<div style="display:flex;flex-direction:column;gap:20px;position:relative;width:100%;padding:0 16px 8px">
+  <span style="font-size:12px;font-weight:400;color:rgba(255,255,255,0.8)">Шрифты на странице</span>
+  <div style="display:flex;flex-direction:column;gap:12px">
+    ${pageFonts.map(f => `<span style="font-size:12px;font-weight:500;color:white;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${f}</span>`).join('')}
+  </div>
+</div>`;
     }
 
-    const wasHidden = tooltip.style.display !== 'block';
-    tooltip.style.display = 'block';
+    const wasHidden = tooltip.style.display !== 'flex';
+    tooltip.style.display = 'flex';
     if (wasHidden || contentKey !== lastTooltipKey) {
       lastTooltipKey = contentKey;
       setTooltipContent(html, wasHidden);
     }
 
-    const pad = 14, tw = 360, th = 280;
+    const pad = 14, tw = 310, th = 280;
     let x = e.clientX + pad, y = e.clientY + pad;
     if (x + tw > window.innerWidth) x = e.clientX - tw - pad;
     if (y + th > window.innerHeight) y = e.clientY - th - pad;

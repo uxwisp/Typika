@@ -1,0 +1,39 @@
+{
+  "manifest_version": 3,
+  "name": "Font Inspector",
+  "version": "2.8",
+  "description": "Hover to inspect fonts. Click to copy name and search.",
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "search",
+    "contextMenus"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "Font Inspector \u2014 click to activate",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "opentype.min.js",
+        "gf-db.js"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
+    }
+  ]
+}

@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Font Inspector",
-  "version": "2.9.4",
+  "version": "2.9.5",
   "description": "Hover to inspect fonts. Click to copy name and search.",
   "permissions": [
     "activeTab",
@@ -29,7 +29,12 @@
     {
       "resources": [
         "opentype.min.js",
-        "gf-db.js"
+        "gf-db.js",
+        "icons/icon-line-height.png",
+        "icons/icon-letter-spacing.png",
+        "icons/icon-cyrillic.png",
+        "icons/icon-redirect-dark.png",
+        "icons/icon-redirect-light.png"
       ],
       "matches": [
         "<all_urls>"

@@ -695,8 +695,9 @@
     return '';
   }
 
-  const _ICON_ARROW_DARK = `<svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5.5 2.5H2.5C1.948 2.5 1.5 2.948 1.5 3.5V11.5C1.5 12.052 1.948 12.5 2.5 12.5H10.5C11.052 12.5 11.5 12.052 11.5 11.5V8.5M8.5 1.5H12.5V5.5M12.5 1.5L6 8" stroke="rgba(0,0,0,0.6)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-  const _ICON_ARROW_LIGHT = `<svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5.5 2.5H2.5C1.948 2.5 1.5 2.948 1.5 3.5V11.5C1.5 12.052 1.948 12.5 2.5 12.5H10.5C11.052 12.5 11.5 12.052 11.5 11.5V8.5M8.5 1.5H12.5V5.5M12.5 1.5L6 8" stroke="rgba(255,255,255,0.7)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  const _u = (name) => chrome.runtime.getURL(`icons/${name}`);
+  const _ICON_ARROW_DARK  = `<img src="${_u('icon-redirect-dark.png')}"  width="14" height="14" style="display:block">`;
+  const _ICON_ARROW_LIGHT = `<img src="${_u('icon-redirect-light.png')}" width="14" height="14" style="display:block">`;
 
   function buildTooltipForEl(el) {
     const s = getComputedStyle(el);
@@ -731,7 +732,7 @@
     if (cyrState === null) {
       cyrChip = `<div style="${CHIP};flex:none;width:100%">${chipVal('<span class="__fi_spin">⠋</span> Кириллица')}${chipRight(`<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="5.5" stroke="rgba(255,255,255,0.25)" stroke-width="1.5"/></svg>`)}</div>`;
     } else if (cyrState === true) {
-      cyrChip = `<div style="${CHIP};flex:none;width:100%">${chipVal('Кириллица')}${chipRight(`<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3.5 8L6.5 11L12.5 5" stroke="#4ade80" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`)}</div>`;
+      cyrChip = `<div style="${CHIP};flex:none;width:100%">${chipVal('Кириллица')}${chipRight(`<img src="${_u('icon-cyrillic.png')}" width="16" height="16" style="display:block">`)}</div>`;
     }
 
     // CTA button
@@ -753,10 +754,10 @@
   <div style="display:flex;flex-direction:column;gap:8px;width:100%">
     <div style="display:flex;gap:8px;align-items:stretch">
       <div style="${CHIP};flex:1">${chipVal(s.fontSize)}${chipRight(semTag ? `<span style="font-size:12px;font-weight:500;color:rgba(255,255,255,0.5)">${semTag}</span>` : '')}</div>
-      <div style="${CHIP};flex:1">${chipVal(displayLH)}${chipRight(_ICON_LH)}</div>
+      <div style="${CHIP};flex:1">${chipVal(displayLH)}${chipRight(`<img src="${_u('icon-line-height.png')}" width="16" height="16" style="display:block">`)}</div>
     </div>
     <div style="display:flex;gap:8px;align-items:stretch">
-      <div style="${CHIP};flex:1">${chipVal(displayLS)}${chipRight(_ICON_LS)}</div>
+      <div style="${CHIP};flex:1">${chipVal(displayLS)}${chipRight(`<img src="${_u('icon-letter-spacing.png')}" width="16" height="16" style="display:block">`)}</div>
       <div style="${CHIP};flex:1">${chipVal(colorHex)}${chipRight(`<div style="width:12px;height:12px;border-radius:50%;background:${colorHex};border:1px solid rgba(255,255,255,0.25);flex-shrink:0"></div>`)}</div>
     </div>
     ${cyrChip}

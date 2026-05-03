@@ -795,7 +795,7 @@
       document.removeEventListener('mousemove', onMouseMove, true);
       document.removeEventListener('click', onClick, true);
       document.removeEventListener('keydown', onKeydown, true);
-      document.removeEventListener('mouseleave', onMouseLeave, true);
+      document.documentElement.removeEventListener('mouseleave', onMouseLeave);
       document.documentElement.style.removeProperty('cursor');
       clearHighlight();
       clearInterval(spinnerInterval);
@@ -878,7 +878,7 @@
     document.addEventListener('mousemove', onMouseMove, true);
     document.addEventListener('click', onClick, true);
     document.addEventListener('keydown', onKeydown, true);
-    document.addEventListener('mouseleave', onMouseLeave, true);
+    document.documentElement.addEventListener('mouseleave', onMouseLeave);
     document.documentElement.style.setProperty('cursor', 'crosshair', 'important');
     if (!animRafId) animRafId = requestAnimationFrame(animLoop);
     prefetchCyrillicForPage();
@@ -888,7 +888,7 @@
     document.removeEventListener('mousemove', onMouseMove, true);
     document.removeEventListener('click', onClick, true);
     document.removeEventListener('keydown', onKeydown, true);
-    document.removeEventListener('mouseleave', onMouseLeave, true);
+    document.documentElement.removeEventListener('mouseleave', onMouseLeave);
     document.documentElement.style.removeProperty('cursor');
     clearHighlight();
     clearInterval(spinnerInterval);

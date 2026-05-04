@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
-  "name": "Font Inspector",
-  "version": "3.0.1",
+  "name": "Typika",
+  "version": "3.0.9",
   "description": "Hover to inspect fonts. Click to copy name and search.",
   "permissions": [
     "activeTab",
@@ -13,7 +13,7 @@
     "service_worker": "background.js"
   },
   "action": {
-    "default_title": "Font Inspector \u2014 click to activate",
+    "default_title": "Typika \u2014 click to activate",
     "default_icon": {
       "16": "icons/icon16.png",
       "48": "icons/icon48.png",

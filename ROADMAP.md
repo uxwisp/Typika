@@ -1,4 +1,4 @@
-# Font Inspector — Roadmap
+# Typika — Roadmap
 
 ## Реализовано
 

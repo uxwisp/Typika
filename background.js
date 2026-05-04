@@ -59,14 +59,14 @@ chrome.action.onClicked.addListener(async (tab) => {
       }
       activeTabIds.add(tab.id);
       chrome.action.setIcon({ tabId: tab.id, path: { 16: 'icons/icon16_on.png', 48: 'icons/icon48_on.png', 128: 'icons/icon128_on.png' } });
-      chrome.action.setTitle({ tabId: tab.id, title: 'Font Inspector — ON (click to deactivate)' });
+      chrome.action.setTitle({ tabId: tab.id, title: 'Typika — ON (click to deactivate)' });
     } else {
       await chrome.scripting.executeScript({ target: { tabId: tab.id }, func: () => { window.__fontInspectorDestroy?.(); } });
       activeTabIds.delete(tab.id);
       chrome.action.setIcon({ tabId: tab.id, path: { 16: 'icons/icon16.png', 48: 'icons/icon48.png', 128: 'icons/icon128.png' } });
-      chrome.action.setTitle({ tabId: tab.id, title: 'Font Inspector — click to activate' });
+      chrome.action.setTitle({ tabId: tab.id, title: 'Typika — click to activate' });
     }
-  } catch(e) { console.error('Font Inspector:', e); }
+  } catch(e) { console.error('Typika:', e); }
 });
 
 chrome.runtime.onMessage.addListener((msg) => {
@@ -83,7 +83,7 @@ chrome.runtime.onMessage.addListener((msg) => {
       if (!tabId) return;
       activeTabIds.delete(tabId);
       chrome.action.setIcon({ tabId, path: { 16: 'icons/icon16.png', 48: 'icons/icon48.png', 128: 'icons/icon128.png' } }).catch(() => {});
-      chrome.action.setTitle({ tabId, title: 'Font Inspector — click to activate' }).catch(() => {});
+      chrome.action.setTitle({ tabId, title: 'Typika — click to activate' }).catch(() => {});
     });
   }
 });

@@ -30,17 +30,35 @@
   const cyrillicCache = new Map();
   const fullNameCache = new Map(); // family → full name from font file
 
+  function detectPlatformFont() {
+    try {
+      const p = ((navigator.userAgentData?.platform) || navigator.platform || '').toLowerCase();
+      const ua = navigator.userAgent.toLowerCase();
+      if (/win/.test(p) || /windows/.test(ua)) {
+        // Win11 ships Segoe UI Variable; Win10 uses Segoe UI
+        try { if (document.fonts.check('12px "Segoe UI Variable"')) return 'Segoe UI Variable'; } catch(e) {}
+        return 'Segoe UI';
+      }
+      if (/mac|iphone|ipad|ipod/.test(p) || /macintosh|iphone|ipad/.test(ua)) return 'San Francisco';
+      if (/android/.test(ua)) return 'Roboto';
+      if (/linux/.test(p)) return 'Noto Sans';
+    } catch(e) {}
+    return null;
+  }
+  const _platformFont = detectPlatformFont();
+  const _platformSuffix = _platformFont ? ` · ${_platformFont}` : '';
+
   const SYSTEM_FONT_ALIASES = {
-    '-apple-system':            'System UI · San Francisco',
-    '-apple-system-body':       'System UI · San Francisco',
-    '-apple-system-headline':   'System UI · San Francisco',
-    '-apple-system-subheadline':'System UI · San Francisco',
-    'blinkmacsystemfont':       'System UI · San Francisco',
-    'system-ui':                'System UI',
-    'ui-sans-serif':            'System UI · Sans-serif',
-    'ui-serif':                 'System UI · Serif',
-    'ui-monospace':             'System UI · Monospace',
-    'ui-rounded':               'System UI · Rounded',
+    '-apple-system':             `System UI${_platformSuffix}`,
+    '-apple-system-body':        `System UI${_platformSuffix}`,
+    '-apple-system-headline':    `System UI${_platformSuffix}`,
+    '-apple-system-subheadline': `System UI${_platformSuffix}`,
+    'blinkmacsystemfont':        `System UI${_platformSuffix}`,
+    'system-ui':                 `System UI${_platformSuffix}`,
+    'ui-sans-serif':             `System UI${_platformSuffix}`,
+    'ui-serif':                  'System UI · Serif',
+    'ui-monospace':              'System UI · Monospace',
+    'ui-rounded':                'System UI · Rounded',
   };
 
   function resolveFamilyName(family) {
@@ -163,7 +181,7 @@
     `;
     el.innerHTML = `
       <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 12px;border-bottom:1px solid #1e1e1e;flex-shrink:0;cursor:default">
-        <span style="color:#666;font-size:10px;text-transform:uppercase;letter-spacing:.06em">Font Inspector · Логи</span>
+        <span style="color:#666;font-size:10px;text-transform:uppercase;letter-spacing:.06em">Typika · Логи</span>
         <div style="display:flex;gap:10px;align-items:center">
           <span id="__fi_log_open" style="font-size:10px;color:#555;cursor:pointer;padding:2px 6px;border:1px solid #2a2a2a;border-radius:4px">открыть полностью ↗</span>
           <span id="__fi_log_copy" style="font-size:10px;color:#555;cursor:pointer;padding:2px 6px;border:1px solid #2a2a2a;border-radius:4px">копировать</span>
@@ -177,7 +195,7 @@
 
     el.querySelector('#__fi_log_open').addEventListener('click', () => {
       const content = logLines.join('\n') || '(пусто)';
-      const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Font Inspector Logs</title>
+      const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Typika Logs</title>
         <style>body{background:#0a0a0a;color:#aaa;font:13px/1.6 ui-monospace,SFMono-Regular,monospace;padding:24px;margin:0;white-space:pre-wrap;word-break:break-all}</style>
         </head><body>${content.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</body></html>`;
       const blob = new Blob([html], {type:'text/html'});
@@ -580,10 +598,18 @@
     }, 80);
   }
 
-  function rgb2hex(rgb) {
-    const m = rgb.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)/i);
-    if (!m) return rgb;
-    return '#' + [m[1],m[2],m[3]].map(x => ('0'+parseInt(x).toString(16)).slice(-2)).join('');
+  function rgb2hex(color) {
+    const m = color.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)/i);
+    if (m) return '#' + [m[1],m[2],m[3]].map(x => ('0'+parseInt(x).toString(16)).slice(-2)).join('');
+    try {
+      const cv = document.createElement('canvas');
+      cv.width = cv.height = 1;
+      const ctx = cv.getContext('2d');
+      ctx.fillStyle = color;
+      ctx.fillRect(0, 0, 1, 1);
+      const [r,g,b] = ctx.getImageData(0,0,1,1).data;
+      return '#' + [r,g,b].map(x => ('0'+x.toString(16)).slice(-2)).join('');
+    } catch(e) { return color; }
   }
 
   function row(k, v) {
@@ -714,21 +740,56 @@
     const cyrState = cyrillicCache.has(family) ? cyrillicCache.get(family) : null;
     const gfInfo = lookupGF(family);
     const fullName = fullNameCache.get(family);
-    const displayFamily = resolveFamilyName(fullName || family);
+    // Weight suffixes that may be embedded in the font family name itself
+    // e.g. "TT Firs Neue Thin" → family="TT Firs Neue", wName="Thin"
+    // Suffixes sorted longest → shortest so "DemiBold Italic" matches before "Bold Italic" or "Italic"
+    const WEIGHT_SUFFIXES = [
+      // weight + Oblique
+      'ExtraLight Oblique','Extra Light Oblique','UltraLight Oblique','Ultra Light Oblique',
+      'ExtraBold Oblique','Extra Bold Oblique','UltraBold Oblique','Ultra Bold Oblique',
+      'SemiBold Oblique','Semi Bold Oblique','DemiBold Oblique','Demi Bold Oblique',
+      'Medium Oblique','Light Oblique','Thin Oblique','Black Oblique','Heavy Oblique',
+      'Regular Oblique','Bold Oblique',
+      // weight + Italic
+      'ExtraLight Italic','Extra Light Italic','UltraLight Italic','Ultra Light Italic',
+      'ExtraBold Italic','Extra Bold Italic','UltraBold Italic','Ultra Bold Italic',
+      'SemiBold Italic','Semi Bold Italic','DemiBold Italic','Demi Bold Italic',
+      'Medium Italic','Light Italic','Thin Italic','Black Italic','Heavy Italic',
+      'Regular Italic','Bold Italic',
+      // weight only
+      'ExtraLight','Extra Light','UltraLight','Ultra Light',
+      'ExtraBold','Extra Bold','UltraBold','Ultra Bold',
+      'SemiBold','Semi Bold','DemiBold','Demi Bold',
+      'Medium','Light','Thin','Regular','Black','Heavy','Demi',
+      'Bold',
+      // style only
+      'Italic','Oblique'
+    ];
+    const rawName = resolveFamilyName(fullName || family);
+    let displayFamily = rawName;
+    let wNameFromFamily = '';
+    for (const sfx of WEIGHT_SUFFIXES) {
+      const re = new RegExp('\\s+' + sfx.replace(/ /g, '\\s+') + '$', 'i');
+      if (re.test(rawName)) {
+        displayFamily = rawName.replace(re, '').trim();
+        wNameFromFamily = sfx;
+        break;
+      }
+    }
     const displayLH = resolveLineHeight(el, s.lineHeight, s.fontSize);
     const displayLS = (s.letterSpacing === 'normal' || parseFloat(s.letterSpacing) === 0) ? '0px' : s.letterSpacing;
     const wNum = parseInt(s.fontWeight);
-    const wName = {100:'Thin',200:'ExtraLight',300:'Light',400:'Regular',500:'Medium',600:'SemiBold',700:'Bold',800:'ExtraBold',900:'Black'}[wNum] || '';
+    const wNameFromCSS = {100:'Thin',200:'ExtraLight',300:'Light',400:'Regular',500:'Medium',600:'SemiBold',700:'Bold',800:'ExtraBold',900:'Black'}[wNum] || '';
+    // Prefer suffix from family name; fall back to CSS font-weight (hide "Regular" when suffix found)
+    const wName = wNameFromFamily || wNameFromCSS;
     const semTag = getSemanticTag(el);
 
-    // bg-light blob — color depends on state
-    const blobGradient = gfInfo && cyrState === true
-      ? 'radial-gradient(ellipse 240px 190px at 76% 115%, rgba(50,110,230,1) 0%, transparent 70%), radial-gradient(ellipse 220px 180px at 4% 115%, rgba(20,180,140,1) 0%, transparent 70%)'
-      : gfInfo
-        ? 'radial-gradient(ellipse 300px 220px at 50% 120%, rgba(50,110,230,1) 0%, transparent 70%)'
-        : cyrState !== false
-          ? 'radial-gradient(ellipse 300px 220px at 50% 120%, rgba(20,180,140,1) 0%, transparent 70%)'
-          : 'radial-gradient(ellipse 300px 220px at 50% 120%, rgba(200,140,30,1) 0%, transparent 70%)';
+    // bg-light blob — GF always blue; non-GF: green if cyrillic, amber otherwise
+    const blobGradient = gfInfo
+      ? 'radial-gradient(ellipse 300px 220px at 50% 120%, rgba(50,110,230,1) 0%, transparent 70%)'
+      : cyrState !== false
+        ? 'radial-gradient(ellipse 300px 220px at 50% 120%, rgba(20,180,140,1) 0%, transparent 70%)'
+        : 'radial-gradient(ellipse 300px 220px at 50% 120%, rgba(200,140,30,1) 0%, transparent 70%)';
 
     const CHIP = 'background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;box-sizing:border-box;overflow:hidden;min-width:1px';
     const chipVal = (v) => `<span style="font-size:12px;font-weight:500;color:white;white-space:nowrap">${v}</span>`;
@@ -747,7 +808,7 @@
     const btnStyle = 'position:relative;flex-shrink:0;width:100%;height:36px;border-radius:8px 8px 16px 16px;display:flex;align-items:center;justify-content:center;gap:6px;box-sizing:border-box;overflow:hidden';
     let btn = '';
     if (gfInfo) {
-      btn = `<div style="${btnStyle};background:white;padding:8px 16px 8px 14px">${_ICON_GF}${_ICON_ARROW_DARK}</div>`;
+      btn = `<div style="${btnStyle};padding:8px 16px 8px 14px;gap:4px"><span style="font-size:12px;color:rgba(255,255,255,0.8);white-space:nowrap">Google Fonts</span>${_ICON_ARROW_LIGHT}</div>`;
     } else {
       btn = `<div style="${btnStyle};padding:8px 16px"><span style="font-size:14px;font-weight:400;color:rgba(255,255,255,0.8);white-space:nowrap">Найти шрифт</span>${_ICON_ARROW_LIGHT}</div>`;
     }
@@ -757,9 +818,8 @@
   <div style="position:absolute;bottom:0;left:0;right:0;height:228px;background:${blobGradient}"></div>
 </div>
 <div style="display:flex;flex-direction:column;gap:12px;position:relative;width:100%">
-  <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:baseline;padding:0 16px">
-    <span style="font-size:20px;font-weight:500;color:white">${displayFamily}</span>
-    ${wName ? `<span style="font-size:20px;font-weight:500;color:rgba(255,255,255,0.6)">${wName}</span>` : ''}
+  <div style="padding:0 16px;font-size:20px;font-weight:500;line-height:1.3">
+    <span style="color:white">${displayFamily}</span>${wName ? `<span style="color:rgba(255,255,255,0.6)"> ${wName}</span>` : ''}
   </div>
   <div style="display:flex;flex-direction:column;gap:8px;width:100%">
     <div style="display:flex;gap:8px;align-items:stretch">

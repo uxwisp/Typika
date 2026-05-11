@@ -3,6 +3,8 @@
   "name": "Typika",
   "version": "3.1.2",
   "description": "Hover to inspect fonts. Click to copy name and search.",
+  "author": "uxwisp",
+  "homepage_url": "https://github.com/uxwisp/Typika",
   "permissions": [
     "activeTab",
     "scripting",

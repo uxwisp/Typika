@@ -806,7 +806,7 @@
     const CHIP_COLOR = 'background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:6px 18px 6px 13px;display:flex;align-items:center;gap:8px;box-sizing:border-box;overflow:hidden;min-width:1px';
     const chipVal = (v) => `<span style="font-size:12px;font-weight:500;color:white;white-space:nowrap">${v}</span>`;
     const chipRight = (html) => `<div style="flex-shrink:0;display:flex;align-items:center">${html}</div>`;
-    const fmtDim = (v) => String(v).replace(/(-?\d+\.?\d*)(px|em|rem|%)$/, '$1 $2');
+    const fmtDim = (v) => String(v).replace(/(-?\d+\.?\d*)(px|em|rem|%)$/, (_, n, u) => `${parseFloat(parseFloat(n).toFixed(2))} ${u}`);
 
     // Cyrillic chip (null → spinner, true → check, false → hidden)
     let cyrChip = '';

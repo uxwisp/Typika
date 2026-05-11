@@ -736,7 +736,7 @@
   const _ICON_REDIRECT_WHITE = `<svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7 3C7.276 3.00018 7.5 3.224 7.5 3.5C7.5 3.776 7.276 3.99982 7 4H3.5C3.323 4.00006 3.153 4.07035 3.028 4.19531C2.903 4.32033 2.833 4.49024 2.833 4.667V10.5C2.833 10.677 2.903 10.847 3.028 10.972C3.153 11.097 3.323 11.167 3.5 11.167H9.333C9.51 11.167 9.68 11.097 9.805 10.972C9.93 10.847 10 10.677 10 10.5V7C10 6.724 10.224 6.5 10.5 6.5C10.776 6.5 11 6.724 11 7V10.5C11 10.942 10.824 11.366 10.512 11.679C10.199 11.991 9.775 12.167 9.333 12.167H3.5C3.058 12.167 2.634 11.991 2.321 11.679C2.009 11.366 1.833 10.942 1.833 10.5V4.667C1.833 4.225 2.009 3.801 2.321 3.488C2.634 3.176 3.058 3.00006 3.5 3H7ZM11.667 1.833C11.7 1.833 11.732 1.836 11.765 1.843C11.777 1.845 11.788 1.85 11.8 1.854C11.819 1.859 11.839 1.863 11.857 1.871C11.879 1.88 11.898 1.892 11.917 1.903C11.925 1.908 11.935 1.911 11.942 1.916C12.078 2.005 12.167 2.159 12.167 2.333V5.25C12.167 5.526 11.943 5.75 11.667 5.75C11.391 5.75 11.167 5.526 11.167 5.25V3.54L6.771 7.937C6.575 8.132 6.259 8.132 6.063 7.937C5.868 7.741 5.868 7.425 6.063 7.229L10.46 2.833H8.75C8.474 2.833 8.25 2.609 8.25 2.333C8.25 2.057 8.474 1.833 8.75 1.833H11.667Z" fill="white"/></svg>`;
   const _ICON_REDIRECT_DARK  = `<svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7 3C7.276 3.00018 7.5 3.224 7.5 3.5C7.5 3.776 7.276 3.99982 7 4H3.5C3.323 4.00006 3.153 4.07035 3.028 4.19531C2.903 4.32033 2.833 4.49024 2.833 4.667V10.5C2.833 10.677 2.903 10.847 3.028 10.972C3.153 11.097 3.323 11.167 3.5 11.167H9.333C9.51 11.167 9.68 11.097 9.805 10.972C9.93 10.847 10 10.677 10 10.5V7C10 6.724 10.224 6.5 10.5 6.5C10.776 6.5 11 6.724 11 7V10.5C11 10.942 10.824 11.366 10.512 11.679C10.199 11.991 9.775 12.167 9.333 12.167H3.5C3.058 12.167 2.634 11.991 2.321 11.679C2.009 11.366 1.833 10.942 1.833 10.5V4.667C1.833 4.225 2.009 3.801 2.321 3.488C2.634 3.176 3.058 3.00006 3.5 3H7ZM11.667 1.833C11.7 1.833 11.732 1.836 11.765 1.843C11.777 1.845 11.788 1.85 11.8 1.854C11.819 1.859 11.839 1.863 11.857 1.871C11.879 1.88 11.898 1.892 11.917 1.903C11.925 1.908 11.935 1.911 11.942 1.916C12.078 2.005 12.167 2.159 12.167 2.333V5.25C12.167 5.526 11.943 5.75 11.667 5.75C11.391 5.75 11.167 5.526 11.167 5.25V3.54L6.771 7.937C6.575 8.132 6.259 8.132 6.063 7.937C5.868 7.741 5.868 7.425 6.063 7.229L10.46 2.833H8.75C8.474 2.833 8.25 2.609 8.25 2.333C8.25 2.057 8.474 1.833 8.75 1.833H11.667Z" fill="rgba(0,0,0,0.55)"/></svg>`;
   const _ICON_ARROW_DARK  = _ICON_REDIRECT_DARK;
-  const _ICON_ARROW_LIGHT = `<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4.00714 13L3 11.9929L10.5643 4.42857L5.85714 4.42857L5.85714 3L13 3L13 10.1429L11.5714 10.1429L11.5714 5.43571L4.00714 13Z" fill="white"/></svg>`;
+  const _ICON_ARROW_LIGHT = `<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" opacity="0.8"><path d="M4.00714 13L3 11.9929L10.5643 4.42857L5.85714 4.42857L5.85714 3L13 3L13 10.1429L11.5714 10.1429L11.5714 5.43571L4.00714 13Z" fill="white"/></svg>`;
   const _ICON_COPY_SUCCESS = `<svg width="80" height="65" viewBox="0 0 80 65" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7.78886 13.6395C9.22655 7.16986 15.7633 2.04458 22.3891 2.19182L46.3831 2.72502C53.0089 2.87226 57.2147 8.23626 55.777 14.7059L50.5707 38.1344C49.133 44.604 42.5963 49.7292 35.9705 49.582L11.9764 49.0488C5.35062 48.9016 1.14484 43.5375 2.58253 37.068L7.78886 13.6395Z" fill="white" fill-opacity="0.24"/><path d="M28.9629 26.8631C30.4006 20.3935 36.9374 15.2682 43.5631 15.4154L67.5572 15.9486C74.183 16.0959 78.3888 21.4599 76.9511 27.9295L71.7447 51.358C70.3071 57.8276 63.7703 62.9529 57.1445 62.8056L33.1505 62.2724C26.5247 62.1252 22.3189 56.7612 23.7566 50.2916L28.9629 26.8631Z" fill="white" fill-opacity="0.24"/><path d="M58.3077 43.0951C58.274 42.9709 58.229 42.7594 58.2471 42.4476C57.453 42.9382 56.5726 43.1727 55.6262 43.1517C54.7817 43.1329 54.1181 42.9439 53.6542 42.5924C53.1872 42.2553 53.0104 41.8084 53.1276 41.281C53.2689 40.6452 53.7138 40.1613 54.4743 39.8225C55.2347 39.4836 56.2298 39.3314 57.4712 39.359L58.8958 39.3907L58.9985 38.9283C59.0772 38.5743 58.9872 38.2891 58.7285 38.0728C58.4698 37.8565 58.0343 37.7451 57.4442 37.732C56.915 37.7203 56.4582 37.7972 56.0635 37.9627C55.6672 38.1354 55.4477 38.3411 55.3915 38.594L53.9059 38.561C53.9749 38.2503 54.1934 37.9575 54.5628 37.6753C54.912 37.3926 55.3993 37.1783 55.9552 37.0237C56.5079 36.8835 57.09 36.7948 57.7311 36.809C58.7283 36.8312 59.4631 37.0218 59.9441 37.3882C60.4251 37.7547 60.6126 38.2453 60.4949 38.8671L59.8703 41.6777C59.7418 42.2557 59.7441 42.7059 59.8737 43.0428L59.8544 43.1295L58.3077 43.0951ZM56.0454 42.2316C56.5033 42.2418 56.9585 42.1721 57.4095 42.0296C57.8502 41.8869 58.2004 41.6914 58.4382 41.4498L58.6902 40.3155L57.5404 40.2899C55.7393 40.2499 54.7582 40.5694 54.6073 41.2485C54.5383 41.5592 54.6427 41.7794 54.9213 41.9525C55.1896 42.1255 55.557 42.2208 56.0454 42.2316ZM44.1402 39.6654L48.2816 39.7575L47.0862 35.7956L44.1402 39.6654ZM46.5788 34.1216L48.329 34.1605L51.195 42.9371L49.2311 42.8934L48.6567 41.0146L43.2128 40.8937L41.8233 42.7288L39.8594 42.6852L46.5788 34.1216Z" fill="white"/></svg>`;
 
   // Custom cursor data URL (24x24 arrow)
@@ -803,7 +803,7 @@
         : `radial-gradient(ellipse 300px 220px at 50% 120%, ${hexToRgba(glowSettings.lat)} 0%, transparent 70%)`;
 
     const CHIP = 'background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:6px 16px 6px 13px;display:flex;align-items:center;justify-content:space-between;box-sizing:border-box;overflow:hidden;min-width:1px';
-    const CHIP_COLOR = 'background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:6px 13px 6px 18px;display:flex;align-items:center;gap:8px;box-sizing:border-box;overflow:hidden;min-width:1px';
+    const CHIP_COLOR = 'background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:6px 18px 6px 13px;display:flex;align-items:center;gap:8px;box-sizing:border-box;overflow:hidden;min-width:1px';
     const chipVal = (v) => `<span style="font-size:12px;font-weight:500;color:white;white-space:nowrap">${v}</span>`;
     const chipRight = (html) => `<div style="flex-shrink:0;display:flex;align-items:center">${html}</div>`;
     const fmtDim = (v) => String(v).replace(/(-?\d+\.?\d*)(px|em|rem|%)$/, '$1 $2');
@@ -840,7 +840,7 @@
     </div>
     <div style="display:flex;gap:8px;align-items:stretch">
       <div style="${CHIP};flex:1">${chipVal(fmtDim(displayLS))}${chipRight(_ICON_LS)}</div>
-      <div style="${CHIP_COLOR};flex:1"><div style="width:12px;height:12px;border-radius:50%;background:${colorHex};border:1px solid rgba(255,255,255,0.25);flex-shrink:0"></div><span style="font-size:12px;font-weight:500;color:white;white-space:nowrap;flex:1;text-align:right">${colorHex}</span></div>
+      <div style="${CHIP_COLOR};flex:1;justify-content:space-between"><span style="font-size:12px;font-weight:500;color:white;white-space:nowrap">${colorHex}</span><div style="width:12px;height:12px;border-radius:50%;background:${colorHex};border:1px solid rgba(255,255,255,0.25);flex-shrink:0"></div></div>
     </div>
     ${cyrChip}
   </div>
@@ -887,7 +887,7 @@ ${btn}`;
   <span style="font-size:11px;font-weight:400;color:rgba(255,255,255,0.5)">Шрифты на странице</span>
   <div style="display:flex;flex-direction:column;gap:8px">
     ${shownFonts.map(f => `<span style="font-size:14px;font-weight:500;color:white;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${f}</span>`).join('')}
-    ${restCount > 0 ? `<span style="font-size:12px;font-weight:400;color:rgba(255,255,255,0.5)">… и еще ${restCount}</span>` : ''}
+    ${restCount > 0 ? `<span style="font-size:12px;font-weight:400;color:rgba(255,255,255,0.5)">…и ещё ${restCount}</span>` : ''}
   </div>
 </div>`;
     }
@@ -958,6 +958,7 @@ ${btn}`;
       document.removeEventListener('click', onClick, true);
       document.removeEventListener('keydown', onKeydown, true);
       document.documentElement.removeEventListener('mouseleave', onMouseLeave);
+      document.getElementById('__fi_cursor_style')?.remove();
       document.documentElement.style.removeProperty('cursor');
       clearHighlight();
       clearInterval(spinnerInterval);
@@ -1066,6 +1067,11 @@ ${btn}`;
     document.addEventListener('click', onClick, true);
     document.addEventListener('keydown', onKeydown, true);
     document.documentElement.addEventListener('mouseleave', onMouseLeave);
+    // Override cursor globally — including cursor:pointer on links/buttons
+    const cursorStyle = document.createElement('style');
+    cursorStyle.id = '__fi_cursor_style';
+    cursorStyle.textContent = `* { cursor: ${_cursorUrl} !important; }`;
+    (document.head || document.documentElement).appendChild(cursorStyle);
     document.documentElement.style.setProperty('cursor', _cursorUrl, 'important');
     if (!animRafId) animRafId = requestAnimationFrame(animLoop);
     prefetchCyrillicForPage();
@@ -1076,6 +1082,7 @@ ${btn}`;
     document.removeEventListener('click', onClick, true);
     document.removeEventListener('keydown', onKeydown, true);
     document.documentElement.removeEventListener('mouseleave', onMouseLeave);
+    document.getElementById('__fi_cursor_style')?.remove();
     document.documentElement.style.removeProperty('cursor');
     clearHighlight();
     clearInterval(spinnerInterval);

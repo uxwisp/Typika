@@ -7,7 +7,8 @@ It helps you identify fonts, check Cyrillic support, and open matching fonts in 
 ### [Download v1.0.0-beta](https://github.com/uxwisp/Typika/releases/download/v1.0.0-beta/typika-1.0.0-beta.zip)
 [How instal?](#installation)
 
----
+<img width="1553" height="641" alt="typika-cover" src="https://github.com/user-attachments/assets/a0da8374-ef5b-410c-9604-39a0f886b8b0" />
+
 
 ## Features
 

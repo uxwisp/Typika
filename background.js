@@ -84,7 +84,7 @@ chrome.action.onClicked.addListener(async (tab) => {
       chrome.action.setIcon({ tabId: tab.id, path: { 16: 'icons/icon16.png', 48: 'icons/icon48.png', 128: 'icons/icon128.png' } });
       chrome.action.setTitle({ tabId: tab.id, title: 'Typika — click to activate' });
     }
-  } catch(e) { console.error('Typika:', e); }
+  } catch(e) {}
 });
 
 chrome.runtime.onMessage.addListener((msg) => {

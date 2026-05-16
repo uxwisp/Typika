@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Typika",
-  "version": "3.1.7",
+  "version": "1.0.0",
   "description": "Hover to inspect fonts. Click to copy name and search.",
   "author": "uxwisp",
   "homepage_url": "https://github.com/uxwisp/Typika",
@@ -34,8 +34,7 @@
     {
       "resources": [
         "opentype.min.js",
-        "gf-db.js",
-        "icons/cursor-normal.svg"
+        "gf-db.js"
       ],
       "matches": [
         "<all_urls>"

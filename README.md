@@ -4,7 +4,7 @@
 
 It helps you identify fonts, check Cyrillic support, and open matching fonts in Google Fonts when available — without ads, clutter, or unnecessary complexity.
 
-### [Download v1.0.0-beta](https://github.com/uxwisp/Typika/releases/download/v1.0.0-beta/НазваниеФайла.zip)
+### [Download v1.0.0-beta](https://github.com/uxwisp/Typika/releases/download/v1.0.0-beta)
 [How instal?](#installation)
 
 ---

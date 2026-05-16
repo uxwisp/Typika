@@ -41,9 +41,15 @@ Typika is useful when you want to:
 
 ---
 
-## Installation
+## Analytics
+No personal data is collected. Extension is track anonymous usage statistics, uses Plausible Analytics. We track:
 
-### Option 1 — Download release
+- Browser launch with extension installed
+- Extension icon clicks
+
+---
+
+## Installation
 
 1. Go to the [Releases](https://github.com/uxwisp/Typika/releases) page.
 2. Download the latest `.zip` file.

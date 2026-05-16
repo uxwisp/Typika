@@ -1,10 +1,11 @@
 # Typika
 
-**Typika** is a lightweight browser extension for designers who want to inspect typography on websites faster.
+[**Typika**](https://typika.ru/) is a lightweight browser extension for designers who want to inspect typography on websites faster.
 
 It helps you identify fonts, check Cyrillic support, and open matching fonts in Google Fonts when available — without ads, clutter, or unnecessary complexity.
 
-### [Open Typika website](https://typika.ru)
+### [Download v1.0.0-beta](https://github.com/uxwisp/Typika/releases/download/v1.0.0-beta/НазваниеФайла.zip)
+[How instal?](#installation)
 
 ---
 

@@ -1,7 +1,24 @@
 const activeTabIds = new Set();
 const logsEnabledTabIds = new Set();
 
-chrome.runtime.onInstalled.addListener(() => {
+async function trackEvent(eventName) {
+  try {
+    await fetch("https://plausible.io/api/event", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: eventName,
+        url: "app://extension.typika.ru/" + eventName,
+        domain: "extension.typika.ru"
+      })
+    });
+  } catch (e) {}
+}
+
+chrome.runtime.onStartup.addListener(() => trackEvent("pageview"));
+
+chrome.runtime.onInstalled.addListener((details) => {
+  if (details.reason === 'install') trackEvent("pageview");
   chrome.contextMenus.create({
     id: 'toggleLogs',
     title: '📋 Включить логи',
@@ -53,6 +70,7 @@ chrome.action.onClicked.addListener(async (tab) => {
   const isActive = activeTabIds.has(tab.id);
   try {
     if (!isActive) {
+      trackEvent("activate");
       await injectScripts(tab.id);
       if (logsEnabledTabIds.has(tab.id)) {
         await chrome.tabs.sendMessage(tab.id, { action: 'setLogs', enabled: true });

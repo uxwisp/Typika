@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Typika",
-  "version": "3.1.4",
+  "version": "3.1.7",
   "description": "Hover to inspect fonts. Click to copy name and search.",
   "author": "uxwisp",
   "homepage_url": "https://github.com/uxwisp/Typika",
@@ -10,6 +10,9 @@
     "scripting",
     "search",
     "contextMenus"
+  ],
+  "host_permissions": [
+    "https://plausible.io/*"
   ],
   "background": {
     "service_worker": "background.js"

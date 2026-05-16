@@ -4,7 +4,7 @@
 
 It helps you identify fonts, check Cyrillic support, and open matching fonts in Google Fonts when available — without ads, clutter, or unnecessary complexity.
 
-### [Download v1.0.0-beta](https://github.com/uxwisp/Typika/releases/download/v1.0.0-beta)
+### [Download v1.0.0-beta](https://github.com/uxwisp/Typika/releases/download/v1.0.0-beta/typika-1.0.0-beta.zip)
 [How instal?](#installation)
 
 ---
@@ -52,11 +52,7 @@ No personal data is collected. Extension is track anonymous usage statistics, us
 
 ## Installation
 
-1. Go to the [Releases](https://github.com/uxwisp/Typika/releases) page.
-2. Download the latest `.zip` file.
-3. Unzip the archive.
-4. Open Chrome or another Chromium-based browser.
-5. Go to:
-
-```text
-chrome://extensions/
+1. [Download v1.0.0-beta](https://github.com/uxwisp/Typika/releases/download/v1.0.0-beta/typika-1.0.0-beta.zip)
+2. Unzip the archive.
+3. In Chromium-based browser, open `chrome://extensions/`
+4. Click **Load unpacked** and select the unzipped folder.

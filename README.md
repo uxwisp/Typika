@@ -55,4 +55,5 @@ No personal data is collected. Extension is track anonymous usage statistics, us
 1. [Download v1.0.0-beta](https://github.com/uxwisp/Typika/releases/download/v1.0.0-beta/typika-1.0.0-beta.zip)
 2. Unzip the archive.
 3. In Chromium-based browser, open `chrome://extensions/`
-4. Click **Load unpacked** and select the unzipped folder.
+4. Enable Developer mode
+5. Click **Load unpacked** and select the unzipped folder.

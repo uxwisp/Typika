@@ -4,7 +4,7 @@
 
 It helps you identify fonts, check Cyrillic support, and open matching fonts in Google Fonts when available — without ads, clutter, or unnecessary complexity.
 
-## [Open Typika website](https://typika.ru)
+### [Open Typika website](https://typika.ru)
 
 ---
 

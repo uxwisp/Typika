@@ -92,7 +92,9 @@ chrome.runtime.onMessage.addListener((msg) => {
     chrome.search.query({ text: msg.font + ' font', disposition: 'NEW_TAB' });
   }
   if (msg.action === 'openUrl' && msg.url) {
-    chrome.tabs.create({ url: msg.url });
+    if (msg.url.startsWith('https://fonts.google.com/')) {
+      chrome.tabs.create({ url: msg.url });
+    }
   }
   if (msg.action === 'inspectorOff') {
     // Called when user presses Escape — update icon/title

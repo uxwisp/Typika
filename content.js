@@ -201,6 +201,7 @@
       const blob = new Blob([html], {type:'text/html'});
       const url = URL.createObjectURL(blob);
       window.open(url, '_blank');
+      URL.revokeObjectURL(url);
     });
     el.querySelector('#__fi_log_copy').addEventListener('click', () => {
       navigator.clipboard.writeText(logLines.join('\n'));
@@ -280,7 +281,7 @@
   async function checkFontFileCyrillic(family, url) {
     const absUrl = new URL(url, location.href).href;
     log(family, `fetch → ${absUrl.slice(0, 80)}`);
-    const res = await fetch(absUrl);
+    const res = await fetch(absUrl, { signal: AbortSignal.timeout(8000) });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const buffer = await res.arrayBuffer();
     log(family, `fetched ${(buffer.byteLength/1024).toFixed(1)}kb`);
@@ -831,7 +832,7 @@
 </div>
 <div style="display:flex;flex-direction:column;gap:12px;position:relative;width:100%">
   <div style="padding:0 16px;font-size:20px;font-weight:500;line-height:1.3">
-    <span style="color:white">${displayFamily}</span>${wName ? `<span style="color:rgba(255,255,255,0.6)"> ${wName}</span>` : ''}
+    <span style="color:white">${escHtml(displayFamily)}</span>${wName ? `<span style="color:rgba(255,255,255,0.6)"> ${escHtml(wName)}</span>` : ''}
   </div>
   <div style="display:flex;flex-direction:column;gap:8px;width:100%">
     <div style="display:flex;gap:8px;align-items:stretch">
@@ -886,7 +887,7 @@ ${btn}`;
 <div style="display:flex;flex-direction:column;gap:12px;position:relative;padding:0 16px 8px">
   <span style="font-size:11px;font-weight:400;color:rgba(255,255,255,0.5)">Шрифты на странице</span>
   <div style="display:flex;flex-direction:column;gap:8px">
-    ${shownFonts.map(f => `<span style="font-size:14px;font-weight:500;color:white;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${f}</span>`).join('')}
+    ${shownFonts.map(f => `<span style="font-size:14px;font-weight:500;color:white;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escHtml(f)}</span>`).join('')}
     ${restCount > 0 ? `<span style="font-size:12px;font-weight:400;color:rgba(255,255,255,0.5)">... и ещё ${restCount}</span>` : ''}
   </div>
 </div>`;
@@ -935,7 +936,7 @@ ${btn}`;
 </div>
 <div style="display:flex;flex-direction:column;align-items:center;gap:8px;position:relative;padding:4px 16px 0">
   ${_ICON_COPY_SUCCESS}
-  <div style="font-size:18px;font-weight:500;color:white;text-align:center;line-height:1.2">${family}</div>
+  <div style="font-size:18px;font-weight:500;color:white;text-align:center;line-height:1.2">${escHtml(family)}</div>
   <div style="font-size:12px;color:rgba(255,255,255,0.5);text-align:center">${actionLabel}</div>
 </div>`, true);
       if (gfMatch) {
